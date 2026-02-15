@@ -1,198 +1,192 @@
-# Secure Remote Access – Validation & Testing Notes
+# Secure Remote Access, Validation and Testing Notes
 
-This document captures the **validation strategy, testing performed, and observed results**
-for the secure remote access architecture implemented in this repository.
-
-Testing focuses on verifying that **intended access works** and **unintended access fails**
-by design.
+This document outlines the validation approach, testing activities, and observed results for the secure remote access architecture used in this lab. The goal of testing is simple. Authorized access must work, unauthorized access must fail.
 
 ---
 
 ## 1. Validation Objectives
 
-The purpose of testing was to confirm that:
+Testing confirmed that:
 
-- Remote administrative access is available when authorized
-- Management services are **not exposed** to the public internet
-- VPN access does **not** imply full network trust
-- Firewall and access controls enforce least privilege
-- Misuse or misconfiguration produces expected failures
+- Remote administrative access functions when properly authorized
+- Management interfaces remain isolated from the public internet
+- VPN access does not equal full network trust
+- Firewall rules enforce least privilege
+- Misconfiguration produces controlled and expected failures
 
 ---
 
 ## 2. Test Environment
 
-**Access Context**
-- Client location: Off-site (non-home network)
-- VPN client: WireGuard
-- Authentication: Key-based
-- Firewall: OPNsense (hardened)
+### Access Context
+- Client location, off site network
+- VPN client, WireGuard
+- Authentication, key based
+- Firewall platform, hardened OPNsense
 
-**Target Services**
-- Proxmox management interface (HTTPS / 8006)
-- TrueNAS management interface (HTTPS / 443)
+### Target Services
+- Proxmox management interface, HTTPS port 8006
+- TrueNAS management interface, HTTPS port 443
 
 ---
 
-## 3. Positive Validation Tests (Expected Success)
+## 3. Positive Validation Tests, Expected Success
 
-### Test 3.1 – VPN Connection Establishment
-**Objective:**  
-Confirm VPN tunnel can be established from an off-site network.
+### Test 3.1, VPN Connection Establishment
 
-**Steps:**
+**Objective**  
+Confirm VPN tunnel creation from an external network.
+
+**Steps**
 1. Initiate WireGuard connection from remote client
-2. Observe handshake completion
-3. Verify assigned tunnel IP
+2. Verify handshake completion
+3. Confirm assigned tunnel IP
 
-**Result:**  
-✅ VPN connection established successfully
+**Result**  
+VPN connection established successfully.
 
-**Evidence:**
-- Successful handshake
+**Evidence**
+- Successful handshake observed
 - Tunnel interface active
 - Firewall logs show allowed VPN traffic
 
 ---
 
-### Test 3.2 – Authorized Service Access
-**Objective:**  
-Verify access to explicitly allowed management services.
+### Test 3.2, Authorized Service Access
 
-**Steps:**
-1. Connect to VPN
-2. Navigate to Proxmox HTTPS interface (port 8006)
-3. Navigate to TrueNAS HTTPS interface (port 443)
+**Objective**  
+Validate access to approved management services.
 
-**Result:**  
-✅ Access permitted to authorized services only
+**Steps**
+1. Connect through VPN
+2. Access Proxmox HTTPS interface on port 8006
+3. Access TrueNAS HTTPS interface on port 443
 
-**Notes:**
-- TLS handshake successful
-- Authentication prompts displayed as expected
+**Result**  
+Access allowed only to authorized services.
 
----
-
-## 4. Negative Validation Tests (Expected Failure)
-
-### Test 4.1 – WAN Exposure Validation
-**Objective:**  
-Confirm management interfaces are not reachable from the public internet.
-
-**Steps:**
-1. Disconnect VPN
-2. Attempt direct WAN access to:
-   - Proxmox management port
-   - TrueNAS management port
-
-**Result:**  
-❌ Connection refused / no response
-
-**Interpretation:**  
-Correct behavior. Management services are not WAN-exposed.
+**Notes**
+- TLS handshake completed
+- Authentication prompts displayed correctly
 
 ---
 
-### Test 4.2 – General LAN Access
-**Objective:**  
-Verify VPN does not grant unrestricted LAN access.
+## 4. Negative Validation Tests, Expected Failure
 
-**Steps:**
-1. Connect to VPN
-2. Attempt access to non-authorized LAN hosts
-3. Attempt ICMP and TCP connections
+### Test 4.1, WAN Exposure Validation
 
-**Result:**  
-❌ Access denied
+**Objective**  
+Verify management services are not reachable from the public internet.
 
-**Interpretation:**  
-Firewall rules correctly enforce scoped access.
+**Steps**
+1. Disconnect VPN session
+2. Attempt direct WAN access to Proxmox and TrueNAS management ports
+
+**Result**  
+Connections refused or no response.
+
+**Interpretation**  
+Management interfaces remain isolated from WAN access.
 
 ---
 
-### Test 4.3 – Lateral Movement Attempt
-**Objective:**  
-Ensure VPN clients cannot communicate laterally with other VPN or LAN hosts.
+### Test 4.2, General LAN Access Restriction
 
-**Steps:**
+**Objective**  
+Confirm VPN clients cannot access unrestricted LAN resources.
+
+**Steps**
+1. Establish VPN connection
+2. Attempt access to non authorized hosts
+3. Test ICMP and TCP connectivity
+
+**Result**  
+Access denied.
+
+**Interpretation**  
+Firewall rules enforce scoped access boundaries.
+
+---
+
+### Test 4.3, Lateral Movement Control
+
+**Objective**  
+Prevent client to client or east west traffic across lab segments.
+
+**Steps**
 1. Connect VPN client
-2. Attempt client-to-client communication
-3. Attempt east-west traffic between lab segments
+2. Attempt communication with other VPN and LAN hosts
 
-**Result:**  
-❌ Traffic blocked
+**Result**  
+Traffic blocked.
 
-**Interpretation:**  
-Client isolation and segmentation controls functioning as intended.
+**Interpretation**  
+Segmentation and isolation controls operate as designed.
 
 ---
 
 ## 5. Firewall Rule Validation
 
-Firewall rules were reviewed to ensure:
-- Default deny is enforced
-- VPN rules are host- and port-specific
-- No broad “allow VPN subnet” rules exist
-- WAN interface denies inbound management traffic
+Firewall policies were reviewed to confirm:
 
-**Result:**  
-✅ Rules align with documented access model
+- Default deny posture enforced
+- VPN rules limited by host and port
+- No broad allow rules for VPN subnets
+- WAN interface blocks inbound management traffic
+
+**Result**  
+Rules align with least privilege design.
 
 ---
 
-## 6. Logging & Monitoring Review
+## 6. Logging and Monitoring Review
 
-**Logs Reviewed:**
+### Logs Reviewed
 - VPN connection logs
-- Firewall allow/deny logs
+- Firewall allow and deny events
 
-**Findings:**
-- Authorized traffic logged as expected
+### Findings
+- Authorized traffic logged correctly
 - Denied traffic visible and traceable
-- No unexplained allow events observed
+- No unexplained allow events identified
 
 ---
 
 ## 7. Failure Analysis
 
-No unexpected behavior was observed during testing.
+No unexpected behavior observed during testing.
 
-Expected failures (by design):
+Expected failures included:
+
 - Unauthorized LAN access
-- WAN access to management services
-- Lateral VPN movement
+- WAN access to management interfaces
+- Lateral movement attempts
 
-These failures confirm correct enforcement of least privilege.
+These failures confirm correct enforcement of access controls.
 
 ---
 
-## 8. Residual Risk & Limitations
+## 8. Residual Risk and Limitations
 
-Identified limitations:
-- VPN authentication is key-based only
-- Logs are reviewed manually
-- No automated alerting implemented
+Current limitations:
 
-These risks are accepted temporarily for lab scope.
+- VPN authentication relies on key based access only
+- Log review is manual
+- Automated alerting not yet implemented
+
+These risks are accepted within lab scope.
 
 ---
 
 ## 9. Planned Improvements
 
-- SIEM ingestion of firewall and VPN logs
-- Alerting on abnormal VPN behavior
-- MFA integration for VPN authentication
-- Detection rules for unauthorized access attempts
+- Forward firewall and VPN logs into SIEM
+- Create alerting for abnormal VPN activity
+- Add MFA to VPN authentication
+- Build detections for unauthorized access attempts
 
 ---
 
 ## 10. Validation Summary
 
-Testing confirms that:
-- Secure remote access functions as intended
-- Access is explicitly constrained
-- Failure cases behave correctly
-- Security controls prioritize containment over convenience
-
-This validation supports the design goal of **secure, least-privilege remote administration**.
-
+Testing confirms that secure remote access behaves as designed. Access remains constrained, failure paths operate correctly, and controls favor containment over convenience. The architecture supports least privilege remote administration aligned to defensive security practices.
