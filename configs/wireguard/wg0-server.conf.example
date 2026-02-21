@@ -1,0 +1,22 @@
+# WireGuard Server Configuration (OPNsense)
+# Instance: wg0
+# Description: Secure remote access to home lab infrastructure
+
+[Interface]
+# Server tunnel address
+Address = 10.6.0.1/24
+
+# Server listen port (exposed on WAN)
+ListenPort = 51820
+
+# Server private key (REPLACE WITH YOUR KEY)
+PrivateKey = <REDACTED_SERVER_PRIVATE_KEY>
+
+# Server public key for reference
+# PublicKey: <REDACTED_SERVER_PUBLIC_KEY>
+
+[Peer]
+# Client: Alien (Mobile/Remote Device)
+PublicKey = <REDACTED_CLIENT_PUBLIC_KEY>
+AllowedIPs = 10.6.0.2/32
+PersistentKeepalive = 25

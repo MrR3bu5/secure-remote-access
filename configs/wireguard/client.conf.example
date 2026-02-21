@@ -1,0 +1,27 @@
+# WireGuard Client Configuration
+# Client Name: Alien
+# Use Case: Remote access to lab management interfaces
+
+[Interface]
+# Client tunnel address
+Address = 10.6.0.2/32
+
+# Client private key
+PrivateKey = <REDACTED_CLIENT_PRIVATE_KEY>
+
+# DNS servers (optional, use lab DNS or public)
+DNS = 8.8.8.8, 8.8.4.4
+
+[Peer]
+# Server details
+PublicKey = <REDACTED_CLIENT_PUBLIC_KEY>
+
+# Server endpoint
+Endpoint = <DDNS_HOSTNAME>:51820
+
+# Only route specific traffic through VPN (split tunnel)
+# This routes only the lab network through VPN
+AllowedIPs = <LOCAL_LAN_IP>
+
+# Keep connection alive through NAT
+PersistentKeepalive = 25

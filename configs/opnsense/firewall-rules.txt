@@ -1,0 +1,57 @@
+OPNsense Firewall Rules - WireGuard Interface
+Purpose: Explicit allow rules for VPN access to management services
+Default Policy: Deny all (implicit)
+
+=== WAN INTERFACE RULES ===
+
+Rule 1: Allow WireGuard VPN
+  Action: Pass
+  Interface: WAN
+  Protocol: UDP
+  Source: any
+  Destination: WAN address
+  Port: 51820
+  Description: Allow WireGuard VPN connections from internet
+
+=== WIREGUARD INTERFACE RULES ===
+
+Rule 1: WG to Proxmox GUI
+  Action: Pass
+  Interface: WireGuard (Group)
+  Protocol: TCP
+  Source: WireGuard (Group) net (10.6.0.0/24)
+  Destination: <REDACTED INTERNAL IP>
+  Port: 8006
+  Description: Allow VPN clients to access Proxmox web interface
+
+Rule 2: WG to Lab Jumphost SSH
+  Action: Pass
+  Interface: WireGuard (Group)
+  Protocol: TCP
+  Source: WireGuard (Group) net (10.6.0.0/24)
+  Destination: <REDACTED INTERNAL IP>
+  Port: 2222
+  Description: Allow VPN clients to SSH to lab jumphost
+
+Rule 3: Allow VPN to access TrueNAS UI
+  Action: Pass
+  Interface: WireGuard (Group)
+  Protocol: TCP
+  Source: WireGuard (Group) net (10.6.0.0/24)
+  Destination: <REDACTED INTERNAL IP>
+  Port: 443 (HTTPS)
+  Description: Allow VPN clients to access TrueNAS web interface
+
+Rule 4: Allow VPN to access TrueNAS SMB
+  Action: Pass
+  Interface: WireGuard (Group)
+  Protocol: TCP
+  Source: WireGuard (Group) net (10.6.0.0/24)
+  Destination: <REDACTED INTERNAL IP>
+  Port: 445 (MS DS)
+  Description: Allow VPN clients to access TrueNAS file shares
+
+=== IMPLICIT DENY ===
+All other traffic from WireGuard interface is blocked by default.
+No east-west movement between VPN clients.
+No general LAN access beyond explicitly allowed services.

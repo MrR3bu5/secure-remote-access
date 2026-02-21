@@ -1,0 +1,23 @@
+# Dynamic DNS Configuration
+# Provider: Cloudflare
+# Purpose: Maintain consistent WireGuard endpoint for mobile clients
+
+[Account]
+Service = cloudflare
+Username = <YOUR_EMAIL@EXAMPLE.COM>
+API_Token = <REDACTED_CLOUDFLARE_API_TOKEN>
+
+[DNS Record]
+Zone = redacted
+Hostname = redacted
+Record_Type = A
+
+[Update Settings]
+Check_IP_Method = if
+Interface_To_Monitor = WAN
+Check_Interval = 300 seconds
+Force_SSL = Yes
+
+[Description]
+Purpose = DDNS update for redacted
+Use_Case = WireGuard VPN endpoint resolution
