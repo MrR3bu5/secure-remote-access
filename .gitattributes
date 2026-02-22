@@ -1,0 +1,15 @@
+# Shell scripts must use LF
+*.sh text eol=lf
+
+# Python scripts should use LF
+*.py text eol=lf
+
+# Markdown and config files can use auto
+*.md text
+*.txt text
+*.conf text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.drawio binary
